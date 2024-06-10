@@ -1,10 +1,13 @@
 from flask import Flask, render_template, redirect, url_for, request, session
 from flask_session import Session
 from bingo import *
+import uuid
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "its_a_secret_key_here"
+
+# Configure server-side sessions
 app.config["SESSION_TYPE"] = "filesystem"
+app.config["SECRET_KEY"] = "supersecretkeydonttellanyone"  # You should use a more secure key in production
 Session(app)
 
 # Initialize game state
@@ -16,38 +19,32 @@ def init_game():
         'computer_n': None,
         'player_n': None,
 
-        'player_numbers': [], #track player numbers
-        'available_numbers': set(range(1, 26)),  # track computer numbers
+        'player_numbers': [],  # Track player numbers
+        'available_numbers': set(range(1, 26)),  # Track computer numbers
         
-        'count_p':0,
-        'count_c':0,
+        'count_p': 0,
+        'count_c': 0,
 
-        'winner':None,
+        'winner': None,
 
-        'show_computer':None
+        'show_computer': None
     }
 
-@app.route("/", methods=["GET","POST"])
+@app.route("/", methods=["GET", "POST"])
 def first():
-    return render_template(
-        "home.html",
-    )
+    session['game_id'] = str(uuid.uuid4())  # Create a unique session ID for each new visitor
+    session[session['game_id']] = init_game()  # Initialize game state for the new session
+    return render_template("home.html")
 
 @app.route("/play", methods=["POST", "GET"])
 def play():
-    if 'game_state' not in session:
-        session['game_state'] = init_game()
-
-    game_state = session['game_state']
+    game_state = session.get(session['game_id'])
 
     if request.method == "POST":
         game_state["show_computer"] = True if request.form.get("computer-play") == "on" else None
 
     if game_state["winner"] is not None:
         return redirect(url_for('won'))
-
-    session['game_state'] = game_state
-
     return render_template(
         "play.html",
         player_b=game_state['player_b'],
@@ -60,10 +57,7 @@ def play():
 
 @app.route("/mark/<int:player_n>")
 def mark(player_n):
-    if 'game_state' not in session:
-        return redirect(url_for('play'))
-
-    game_state = session['game_state']
+    game_state = session.get(session['game_id'])
 
     if game_state["winner"] is not None:
         return redirect(url_for('won'))
@@ -79,12 +73,12 @@ def mark(player_n):
 
         if game_state["count_p"] >= 5:
             game_state["winner"] = 1
-            session['game_state'] = game_state
+            session[session['game_id']] = game_state
             return redirect(url_for("won"))
 
         if game_state["count_c"] >= 5:
             game_state["winner"] = 0
-            session['game_state'] = game_state
+            session[session['game_id']] = game_state
             return redirect(url_for("won"))
 
         computer_n = ask_computer(game_state['computer_b'])
@@ -98,29 +92,20 @@ def mark(player_n):
 
         if game_state["count_c"] >= 5:
             game_state["winner"] = 0
-            session['game_state'] = game_state
+            session[session['game_id']] = game_state
             return redirect(url_for("won"))
 
         if game_state["count_p"] >= 5:
             game_state["winner"] = 1
-            session['game_state'] = game_state
+            session[session['game_id']] = game_state
             return redirect(url_for("won"))
 
-        session['game_state'] = game_state
-
-        # Redirect to the home page after processing
-        return redirect(url_for('play'))
-    else:
-        # Handle case where player number is already marked
-        return redirect(url_for('play'))
+    session[session['game_id']] = game_state
+    return redirect(url_for('play'))
 
 @app.route("/won", methods=["POST", "GET"])
 def won():
-    if 'game_state' not in session:
-        return redirect(url_for('play'))
-
-    game_state = session['game_state']
-
+    game_state = session.get(session['game_id'])
     if game_state["winner"] == 1:
         winner = "Player"
     elif game_state["winner"] == 0:
@@ -137,14 +122,13 @@ def won():
         count_p=game_state["count_p"],
     )
 
-@app.route("/play-again", methods=["GET","POST"])
+@app.route("/play-again", methods=["GET", "POST"])
 def play_again():
-    session['game_state'] = init_game()
-
+    session[session['game_id']] = init_game()  # Reset the game state for the current session
     if request.method == "POST":
-        game_state = session['game_state']
+        game_state = session.get(session['game_id'])
         game_state["show_computer"] = True if request.form.get("computer-play") == "on" else None
-        session['game_state'] = game_state
+        session[session['game_id']] = game_state
 
     return redirect(url_for('play'))
 
