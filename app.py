@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, session
 from flask_session import Session
 from bingo import *
-import uuid
 
 app = Flask(__name__)
 
@@ -32,16 +31,17 @@ def init_game():
 
 @app.route("/", methods=["GET", "POST"])
 def first():
-    session['game_id'] = str(uuid.uuid4())  # Create a unique session ID for each new visitor
-    session[session['game_id']] = init_game()  # Initialize game state for the new session
+    session.clear()  # Clear any existing session data
+    session['game_state'] = init_game()  # Initialize game state for the new session
     return render_template("home.html")
 
 @app.route("/play", methods=["POST", "GET"])
 def play():
-    game_state = session.get(session['game_id'])
+    game_state = session.get('game_state')
 
     if request.method == "POST":
         game_state["show_computer"] = True if request.form.get("computer-play") == "on" else None
+        session['game_state'] = game_state  # Update the session with the new state
 
     if game_state["winner"] is not None:
         return redirect(url_for('won'))
@@ -57,7 +57,7 @@ def play():
 
 @app.route("/mark/<int:player_n>")
 def mark(player_n):
-    game_state = session.get(session['game_id'])
+    game_state = session.get('game_state')
 
     if game_state["winner"] is not None:
         return redirect(url_for('won'))
@@ -73,12 +73,12 @@ def mark(player_n):
 
         if game_state["count_p"] >= 5:
             game_state["winner"] = 1
-            session[session['game_id']] = game_state
+            session['game_state'] = game_state
             return redirect(url_for("won"))
 
         if game_state["count_c"] >= 5:
             game_state["winner"] = 0
-            session[session['game_id']] = game_state
+            session['game_state'] = game_state
             return redirect(url_for("won"))
 
         computer_n = ask_computer(game_state['computer_b'])
@@ -92,20 +92,20 @@ def mark(player_n):
 
         if game_state["count_c"] >= 5:
             game_state["winner"] = 0
-            session[session['game_id']] = game_state
+            session['game_state'] = game_state
             return redirect(url_for("won"))
 
         if game_state["count_p"] >= 5:
             game_state["winner"] = 1
-            session[session['game_id']] = game_state
+            session['game_state'] = game_state
             return redirect(url_for("won"))
 
-    session[session['game_id']] = game_state
+    session['game_state'] = game_state
     return redirect(url_for('play'))
 
 @app.route("/won", methods=["POST", "GET"])
 def won():
-    game_state = session.get(session['game_id'])
+    game_state = session.get('game_state')
     if game_state["winner"] == 1:
         winner = "Player"
     elif game_state["winner"] == 0:
@@ -124,11 +124,11 @@ def won():
 
 @app.route("/play-again", methods=["GET", "POST"])
 def play_again():
-    session[session['game_id']] = init_game()  # Reset the game state for the current session
+    session['game_state'] = init_game()  # Reset the game state for the current session
     if request.method == "POST":
-        game_state = session.get(session['game_id'])
+        game_state = session.get('game_state')
         game_state["show_computer"] = True if request.form.get("computer-play") == "on" else None
-        session[session['game_id']] = game_state
+        session['game_state'] = game_state
 
     return redirect(url_for('play'))
 
@@ -144,8 +144,8 @@ if __name__ == "__main__":
     app.run()
 
 
-"""3
-
+#3
+"""
 from flask import Flask, render_template, redirect, url_for, request
 from bingo import *
 
@@ -291,7 +291,7 @@ if __name__ == "__main__":
 
 """
 
-
+#1
 """
 1
 
