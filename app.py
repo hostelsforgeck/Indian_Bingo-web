@@ -40,7 +40,7 @@ def play():
     game_state = session.get('game_state')
 
     if request.method == "POST":
-        game_state["show_computer"] = True if request.form.get("computer-play") == "on" else None
+        game_state["show_computer"] = True if request.form.get("computer-play") == "on" else False
         session['game_state'] = game_state  # Update the session with the new state
 
     if game_state["winner"] is not None:
