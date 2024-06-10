@@ -29,19 +29,27 @@ def init_game():
         'show_computer': None
     }
 
+def get_game_state():
+    if 'game_state' not in session:
+        session['game_state'] = init_game()
+    return session['game_state']
+
+def set_game_state(game_state):
+    session['game_state'] = game_state
+
 @app.route("/", methods=["GET", "POST"])
 def first():
     session.clear()  # Clear any existing session data
-    session['game_state'] = init_game()  # Initialize game state for the new session
+    set_game_state(init_game())  # Initialize game state for the new session
     return render_template("home.html")
 
 @app.route("/play", methods=["POST", "GET"])
 def play():
-    game_state = session.get('game_state')
+    game_state = get_game_state()
 
     if request.method == "POST":
         game_state["show_computer"] = True if request.form.get("computer-play") == "on" else False
-        session['game_state'] = game_state  # Update the session with the new state
+        set_game_state(game_state)  # Update the session with the new state
 
     if game_state["winner"] is not None:
         return redirect(url_for('won'))
@@ -57,7 +65,7 @@ def play():
 
 @app.route("/mark/<int:player_n>")
 def mark(player_n):
-    game_state = session.get('game_state')
+    game_state = get_game_state()
 
     if game_state["winner"] is not None:
         return redirect(url_for('won'))
@@ -73,12 +81,12 @@ def mark(player_n):
 
         if game_state["count_p"] >= 5:
             game_state["winner"] = 1
-            session['game_state'] = game_state
+            set_game_state(game_state)
             return redirect(url_for("won"))
 
         if game_state["count_c"] >= 5:
             game_state["winner"] = 0
-            session['game_state'] = game_state
+            set_game_state(game_state)
             return redirect(url_for("won"))
 
         computer_n = ask_computer(game_state['computer_b'])
@@ -92,20 +100,20 @@ def mark(player_n):
 
         if game_state["count_c"] >= 5:
             game_state["winner"] = 0
-            session['game_state'] = game_state
+            set_game_state(game_state)
             return redirect(url_for("won"))
 
         if game_state["count_p"] >= 5:
             game_state["winner"] = 1
-            session['game_state'] = game_state
+            set_game_state(game_state)
             return redirect(url_for("won"))
 
-    session['game_state'] = game_state
+    set_game_state(game_state)
     return redirect(url_for('play'))
 
 @app.route("/won", methods=["POST", "GET"])
 def won():
-    game_state = session.get('game_state')
+    game_state = get_game_state()
     if game_state["winner"] == 1:
         winner = "Player"
     elif game_state["winner"] == 0:
@@ -124,11 +132,11 @@ def won():
 
 @app.route("/play-again", methods=["GET", "POST"])
 def play_again():
-    session['game_state'] = init_game()  # Reset the game state for the current session
+    game_state = init_game()  # Reset the game state for the current session
+    set_game_state(game_state)
     if request.method == "POST":
-        game_state = session.get('game_state')
         game_state["show_computer"] = True if request.form.get("computer-play") == "on" else None
-        session['game_state'] = game_state
+        set_game_state(game_state)
 
     return redirect(url_for('play'))
 
