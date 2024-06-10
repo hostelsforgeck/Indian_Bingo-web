@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # Configure server-side sessions
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SECRET_KEY"] = "supersecretkeydonttellanyone"  # You should use a more secure key in production
+app.config["SECRET_KEY"] = "supersecretkey"  # You should use a more secure key in production
 Session(app)
 
 # Initialize game state
@@ -142,7 +142,6 @@ def add_header(response):
 
 if __name__ == "__main__":
     app.run()
-
 
 
 """3
