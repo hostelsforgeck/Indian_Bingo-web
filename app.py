@@ -26,7 +26,7 @@ def init_game():
 
         'winner': None,
 
-        'show_computer': None
+        'show_computer': False
     }
 
 def get_game_state():
@@ -135,7 +135,7 @@ def play_again():
     game_state = init_game()  # Reset the game state for the current session
     set_game_state(game_state)
     if request.method == "POST":
-        game_state["show_computer"] = True if request.form.get("computer-play") == "on" else None
+        game_state["show_computer"] = True if request.form.get("computer-play") == "on" else False
         set_game_state(game_state)
 
     return redirect(url_for('play'))
@@ -150,6 +150,8 @@ def add_header(response):
 
 if __name__ == "__main__":
     app.run()
+
+
 
 
 #3
