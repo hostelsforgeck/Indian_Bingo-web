@@ -283,12 +283,7 @@ body {
         </div>
     </div>
 
-    <div class="bingo-status">
-        {% if player_n %}
-            <h3>Player: {{ player_n }}</h3>
-            <h3>Computer: {{ computer_n }}</h3>
-        {% endif %}
-    </div>
+
 
     {% if computer_b %}
     <div class="section computer-section">
@@ -312,6 +307,13 @@ body {
     </div>
     {% endif %}
 </div>
+
+    <div class="bingo-status">
+        {% if player_n %}
+            <h3>Player: {{ player_n }}</h3>
+            <h3>Computer: {{ computer_n }}</h3>
+        {% endif %}
+    </div>
 
 
 {% endblock %}
