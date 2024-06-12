@@ -101,6 +101,8 @@ body {
     text-transform: uppercase;
 }
 
+
+
 .bingo-label {
     font-size: 24px;
     margin-bottom: 10px;
@@ -187,6 +189,7 @@ body {
 }
 
 @media (max-width: 600px) {
+
     .container {
         margin-top: 300px; /* Ensure enough space for header */
     }
@@ -212,6 +215,10 @@ body {
 @media (max-width: 400px) {
     .container {
         margin-top: 120px; /* Ensure enough space for header */
+    }
+
+    .section.player-section {  /* Ensure enough space for header-my soln */
+        margin-top: 70px;
     }
     
     .bingo-card {
@@ -276,6 +283,13 @@ body {
         </div>
     </div>
 
+    <div class="bingo-status">
+        {% if player_n %}
+            <h3>Player: {{ player_n }}</h3>
+            <h3>Computer: {{ computer_n }}</h3>
+        {% endif %}
+    </div>
+
     {% if computer_b %}
     <div class="section computer-section">
         <div class="bingo-header">Computer</div>
@@ -299,10 +313,5 @@ body {
     {% endif %}
 </div>
 
-<div class="bingo-status">
-    {% if player_n %}
-        <h3>Player: {{ player_n }}</h3>
-        <h3>Computer: {{ computer_n }}</h3>
-    {% endif %}
-</div>
+
 {% endblock %}
