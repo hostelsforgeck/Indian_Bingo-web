@@ -30,7 +30,6 @@ def create_board():
     return board
 
 
-
 def find_key_mark(b1, b2, key):
     # marking number selected by players in both tables
     for i in range(5):
@@ -113,15 +112,34 @@ def ask_computer(computer_b):
     """
 
     # -------------------------------------
+    # -------------------------------------
     def score(x, p, q):
         # score calculation for computer
         count = 0
+
+        # Check the column
         for k in range(5):
             if x[k][q] == REMOVED_NUMBER:
                 count += 1
+
+        # Check the row
+        for k in range(5):
             if x[p][k] == REMOVED_NUMBER:
                 count += 1
-        return count / 9
+
+        # Check primary diagonal (if the cell is on this diagonal)
+        if p == q:
+            for k in range(5):
+                if x[k][k] == REMOVED_NUMBER:
+                    count += 1
+
+        # Check secondary diagonal (if the cell is on this diagonal)
+        if p + q == 4:
+            for k in range(5):
+                if x[k][4 - k] == REMOVED_NUMBER:
+                    count += 1
+
+        return count
 
     # -------------------------------------
 
@@ -131,21 +149,35 @@ def ask_computer(computer_b):
 
     else:
 
-        # 1.check for any rows/cols have 4 "█"(or REMOVED_NUMBER) if yes select the 5th number
-        y = [[computer_b[j][i] for j in range(5)] for i in range(5)]
-
+        column = [[computer_b[j][i] for j in range(5)] for i in range(5)]
         for i in range(5):
-            if (computer_b[i].count(REMOVED_NUMBER)) == 4:
+            # Check for any rows have 4 "█"(or REMOVED_NUMBER) if yes select the 5th number
+            if computer_b[i].count(REMOVED_NUMBER) == 4:
                 for j in range(5):
                     if computer_b[i][j] != REMOVED_NUMBER:
                         return computer_b[i][j]
 
-            if (y[i].count(REMOVED_NUMBER)) == 4:
+            # Check for any colums have 4 "█"(or REMOVED_NUMBER) if yes select the 5th number
+            if column[i].count(REMOVED_NUMBER) == 4:
                 for j in range(5):
-                    if y[i][j] != REMOVED_NUMBER:
-                        return y[i][j]
+                    if column[i][j] != REMOVED_NUMBER:
+                        return column[i][j]
 
-        # 2.if there is no row which have 4 "█"(or REMOVED_NUMBER)
+        # Check for main_diagonal have 4 "█"(or REMOVED_NUMBER) if yes select the 5th number
+        main_diagonal = [computer_b[i][i] for i in range(5)]
+        if main_diagonal.count(REMOVED_NUMBER) == 4:
+            for j in range(5):
+                if main_diagonal[j] != REMOVED_NUMBER:
+                    return main_diagonal[j]
+
+        # Check for secondary diagonal have 4 "█"(or REMOVED_NUMBER) if yes select the 5th number
+        secondary_diagonal = [computer_b[i][4 - i] for i in range(5)]
+        if secondary_diagonal.count(REMOVED_NUMBER) == 4:
+            for j in range(5):
+                if secondary_diagonal[j] != REMOVED_NUMBER:
+                    return secondary_diagonal[j]
+
+        # 2.if there is no row/col/diagnal which have 4 "█"(or REMOVED_NUMBER)
         # we will return best number by calculating the high_score
         high_score = -1
         best = -1
@@ -162,10 +194,9 @@ def ask_computer(computer_b):
                     high_score = temp
                     best = computer_b[i][j]
 
-        # print(high_score, best)
+        print(high_score, best)
 
         return best
-
 
 def check_bingo(b):
     # if every element in the row/column == REMOVED NUMBER: increment count
@@ -197,4 +228,3 @@ def check_bingo(b):
         count += 1
 
     return count
-
